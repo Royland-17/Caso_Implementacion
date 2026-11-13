@@ -6,6 +6,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+mutates(Grupo::class);
+
 test('CP-01: Registrar un grupo con toda su información y su curso', function () {
     $curso = Curso::create([
         'sigla' => 'IF6100',
@@ -26,7 +28,7 @@ test('CP-01: Registrar un grupo con toda su información y su curso', function (
     expect($grupoRecuperado->numeroCiclo)->toBe(2)
         ->and($grupoRecuperado->ano)->toBe(2026)
         ->and($grupoRecuperado->numeroGrupo)->toBe(1)
-        ->and($grupoRecuperado->abierto)->toBeTrue() // Valida que llega como booleano
+        ->and($grupoRecuperado->abierto)->toBeTrue()
         ->and($grupoRecuperado->curso->sigla)->toBe('IF6100')
         ->and($grupoRecuperado->curso->creditos)->toBe(4);
 });

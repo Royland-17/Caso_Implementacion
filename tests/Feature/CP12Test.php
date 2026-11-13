@@ -1,3 +1,4 @@
+
 <?php
 
 use App\Models\Curso;
@@ -41,11 +42,53 @@ test('CP-12 rechaza notas menores que 0 o mayores que 10', function ($valorInval
     expect(fn () => $grupo->registrarNota($estudiante, $valorInvalido))
         ->toThrow(InvalidArgumentException::class);
 
-    // Cambiado 'estudiante_id' por 'carne'
     $matricula = EstudianteMatriculado::where('grupo_id', $grupo->id)
-        ->where('carne', $estudiante->carne) 
+        ->where('carne', $estudiante->carne)
         ->first();
 
     expect($matricula->nota)->toBeNull();
 
 })->with([-1, 10.5]);
+
+
+test('CP-12 acepta notas en los límites permitidos', function ($valorValido) {
+
+    $curso = Curso::factory()->create([
+        'sigla' => 'IF6100',
+        'nombreCurso' => 'Análisis y Diseño de Sistemas',
+        'creditos' => 4,
+    ]);
+
+    $docente = Docente::factory()->create([
+        'codEmpleado' => 1001,
+        'nombreEmpleado' => 'Ana',
+        'apellidosEmpleado' => 'Mora Vargas',
+    ]);
+
+    $grupo = Grupo::factory()->create([
+        'sigla' => 'IF6100',
+        'numeroCiclo' => 2,
+        'ano' => 2026,
+        'numeroGrupo' => 1,
+        'abierto' => false,
+        'cupo' => 30,
+    ]);
+
+    $estudiante = Estudiante::factory()->create([
+        'carne' => 'C12345',
+        'nombre' => 'María',
+        'apellidos' => 'Solís Quesada',
+        'consejero_id' => 1001,
+    ]);
+
+    $grupo->estudiantes()->attach($estudiante->carne, ['nota' => null]);
+
+    $grupo->registrarNota($estudiante, $valorValido);
+
+    $matricula = EstudianteMatriculado::where('grupo_id', $grupo->id)
+        ->where('carne', $estudiante->carne)
+        ->first();
+
+    expect((float) $matricula->nota)->toBe((float) $valorValido);
+
+})->with([0.0, 10.0]);
