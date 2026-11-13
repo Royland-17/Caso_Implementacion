@@ -9,20 +9,22 @@ class Estudiante extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'came';
-    public $incrementing = false;
+    protected $table = 'estudiantes';
+    protected $primaryKey = 'carne';
     protected $keyType = 'string';
+    public $incrementing = false;
 
-    protected $fillable = ['came', 'nombre', 'apellidos', 'docente_cod_empleado'];
+    protected $fillable = ['carne', 'nombre', 'apellidos', 'consejero_id'];
 
     public function consejero()
     {
-        return $this->belongsTo(Docente::class, 'docente_cod_empleado', 'codEmpleado');
+        return $this->belongsTo(Docente::class, 'consejero_id', 'codEmpleado');
     }
 
     public function grupos()
     {
-        return $this->belongsToMany(Grupo::class, 'estudiante_matriculados', 'estudiante_came', 'grupo_id', 'came', 'id')
+        return $this->belongsToMany(Grupo::class, 'estudiante_matriculado', 'carne', 'grupo_id')
+                    ->using(EstudianteMatriculado::class)
                     ->withPivot('nota');
     }
 }

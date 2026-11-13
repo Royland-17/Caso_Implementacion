@@ -9,14 +9,15 @@ class Curso extends Model
 {
     use HasFactory;
 
+    protected $table = 'cursos';
     protected $primaryKey = 'sigla';
-    public $incrementing = false;
     protected $keyType = 'string';
+    public $incrementing = false;
 
     protected $fillable = ['sigla', 'nombreCurso', 'creditos'];
 
     public function grupos()
     {
-        return $this->hasMany(Grupo::class, 'curso_sigla', 'sigla');
+        return $this->hasMany(Grupo::class, 'sigla', 'sigla');
     }
 }

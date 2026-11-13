@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('grupos', function (Blueprint $table) {
-    $table->id();
-    $table->integer('numeroCiclo');
-    $table->integer('ano');
-    $table->integer('numeroGrupo');
-    $table->boolean('abierto');
-    $table->string('curso_sigla');
-    $table->foreign('curso_sigla')->references('sigla')->on('cursos')->onDelete('cascade');
-    
-    $table->timestamps();
-    });
+            $table->id();
+            $table->integer('numeroCiclo');
+            $table->integer('ano');
+            $table->integer('numeroGrupo');
+            $table->boolean('abierto');
+            $table->integer('cupo')->default(30);
+            $table->string('sigla');
+            $table->foreign('sigla')->references('sigla')->on('cursos')->onDelete('cascade');
+            $table->timestamps();
+        });
     }
 
     /**

@@ -9,24 +9,61 @@ class Grupo extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['numeroCiclo', 'ano', 'numeroGrupo', 'abierto', 'curso_sigla'];
+    protected $table = 'grupos';
+    protected $fillable = ['numeroCiclo', 'ano', 'numeroGrupo', 'abierto', 'sigla'];
 
-    // Un grupo pertenece a un curso
+    protected $casts = [
+        'abierto' => 'boolean',
+    ];
+
+    public function asignarDocente($codEmpleado)
+    {
+        if ($this->docentes()->count() >= 2) {
+            throw new \DomainException('Un grupo no puede tener más de dos docentes.');
+        }
+        
+        $this->docentes()->attach($codEmpleado);
+    }
+
+    public function puedeAbrirse()
+    {
+        $totalEstudiantes = $this->estudiantes()->count();
+        $totalDocentes = $this->docentes()->count();
+
+        return $totalDocentes >= 1 && $totalEstudiantes >= 15;
+    }
+
+    public function abrir()
+    {
+        if (!$this->puedeAbrirse()) {
+            throw new \DomainException('El grupo no cumple con los requisitos para ser abierto.');
+        }
+
+        $this->update(['abierto' => true]);
+    }
+
+    public function registrarNota($estudiante, float $nota)
+    {
+        if ($nota < 0 || $nota > 10) {
+            throw new \InvalidArgumentException('La nota debe estar entre 0 y 10.');
+        }
+
+        $this->estudiantes()->updateExistingPivot($estudiante->carne, ['nota' => $nota]);
+    }
+
     public function curso()
     {
-        return $this->belongsTo(Curso::class, 'curso_sigla', 'sigla');
+        return $this->belongsTo(Curso::class, 'sigla', 'sigla');
     }
 
-    // Un grupo es impartido por 1 o 2 docentes
     public function docentes()
     {
-        return $this->belongsToMany(Docente::class, 'docente_grupo', 'grupo_id', 'docente_cod_empleado', 'id', 'codEmpleado');
+        return $this->belongsToMany(Docente::class, 'docente_grupo', 'grupo_id', 'codEmpleado');
     }
 
-    // Estudiantes matriculados en el grupo
     public function estudiantes()
     {
-        return $this->belongsToMany(Estudiante::class, 'estudiante_matriculados', 'grupo_id', 'estudiante_came', 'id', 'came')
+        return $this->belongsToMany(Estudiante::class, 'estudiantes_matriculados', 'grupo_id', 'carne')
                     ->using(EstudianteMatriculado::class)
                     ->withPivot('nota');
     }

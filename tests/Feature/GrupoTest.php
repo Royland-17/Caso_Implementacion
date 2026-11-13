@@ -2,38 +2,68 @@
 
 namespace Tests\Feature;
 
+use App\Models\Curso;
+use App\Models\Docente;
+use App\Models\Estudiante;
+use App\Models\Grupo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\Curso;
-use App\Models\Grupo;
 
 class GrupoTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_grupo_contiene_informacion_real()
+    public function test_grupo_contiene_informacion_completa_asociada()
     {
         $curso = Curso::create([
-            'sigla' => 'IF6100',
-            'nombreCurso' => 'Análisis y Diseño de Sistemas',
-            'creditos' => 4,
+            'sigla' => 'IF1300',
+            'nombreCurso' => 'Ingeniería de Software I',
+            'creditos' => 4
         ]);
 
-        $grupoCreado = Grupo::create([
-            'numeroCiclo' => 2,
+        $docente1 = Docente::create([
+            'codEmpleado' => 101,
+            'nombreEmpleado' => 'Carlos',
+            'apellidosEmpleado' => 'Mora'
+        ]);
+
+        $docente2 = Docente::create([
+            'codEmpleado' => 102,
+            'nombreEmpleado' => 'Ana',
+            'apellidosEmpleado' => 'Solís'
+        ]);
+
+        $grupo = Grupo::create([
+            'numeroCiclo' => 1,
             'ano' => 2026,
             'numeroGrupo' => 1,
             'abierto' => true,
-            'curso_sigla' => $curso->sigla,
+            'sigla' => 'IF1300'
         ]);
 
-        $grupoRecuperado = Grupo::find($grupoCreado->id);
+        $grupo->docentes()->attach([$docente1->codEmpleado, $docente2->codEmpleado]);
 
-        $this->assertNotNull($grupoRecuperado);
-        $this->assertEquals(2, $grupoRecuperado->numeroCiclo);
-        $this->assertEquals(2026, $grupoRecuperado->ano);
-        $this->assertEquals(1, $grupoRecuperado->numeroGrupo);
-        $this->assertTrue((bool) $grupoRecuperado->abierto);
-        $this->assertEquals('IF6100', $grupoRecuperado->curso_sigla);
+        for ($i = 1; $i <= 15; $i++) {
+            $estudiante = Estudiante::create([
+                'carne' => 'B' . str_pad($i, 5, '0', STR_PAD_LEFT),
+                'nombre' => 'Estudiante ' . $i,
+                'apellidos' => 'Apellido ' . $i,
+                'consejero_id' => $docente1->codEmpleado
+            ]);
+
+            $grupo->estudiantes()->attach($estudiante->carne, ['nota' => 90.0]);
+        }
+
+        $grupo->load('curso', 'docentes', 'estudiantes.consejero');
+
+        $this->assertEquals('IF1300', $grupo->sigla);
+        $this->assertEquals('Ingeniería de Software I', $grupo->curso->nombreCurso);
+        $this->assertCount(2, $grupo->docentes);
+        $this->assertCount(15, $grupo->estudiantes);
+
+        $primerEstudiante = $grupo->estudiantes->first();
+        $this->assertEquals(90.0, $primerEstudiante->pivot->nota);
+        $this->assertNotNull($primerEstudiante->consejero);
+        $this->assertEquals(101, $primerEstudiante->consejero->codEmpleado);
     }
 }

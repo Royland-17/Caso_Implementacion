@@ -9,19 +9,20 @@ class Docente extends Model
 {
     use HasFactory;
 
+    protected $table = 'docentes';
     protected $primaryKey = 'codEmpleado';
-    public $incrementing = false;
     protected $keyType = 'int';
+    public $incrementing = false;
 
     protected $fillable = ['codEmpleado', 'nombreEmpleado', 'apellidosEmpleado'];
 
     public function estudiantes()
     {
-        return $this->hasMany(Estudiante::class, 'docente_cod_empleado', 'codEmpleado');
+        return $this->hasMany(Estudiante::class, 'consejero_id', 'codEmpleado');
     }
 
     public function grupos()
     {
-        return $this->belongsToMany(Grupo::class, 'docente_grupo', 'docente_cod_empleado', 'grupo_id', 'codEmpleado', 'id');
+        return $this->belongsToMany(Grupo::class, 'docente_grupo', 'codEmpleado', 'grupo_id');
     }
 }

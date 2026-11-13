@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('estudiante_matriculados', function (Blueprint $table) {
-    $table->id();
-
-    $table->string('estudiante_came');
-    $table->foreign('estudiante_came')->references('came')->on('estudiantes')->onDelete('cascade');
+    Schema::create('estudiantes_matriculados', function (Blueprint $table) {
     $table->unsignedBigInteger('grupo_id');
+    $table->string('carne');
+    $table->float('nota')->nullable();
+
     $table->foreign('grupo_id')->references('id')->on('grupos')->onDelete('cascade');
-    $table->float('nota');
+    $table->foreign('carne')->references('carne')->on('estudiantes')->onDelete('cascade');
+
+    $table->primary(['grupo_id', 'carne']);
     $table->timestamps();
     });
     }
